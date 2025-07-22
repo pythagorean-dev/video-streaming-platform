@@ -1,68 +1,113 @@
-# VideoStream Pro 🎬
+# 🎥 VideoStream Pro - YouTube Alternative
 
-Eine professionelle Video-Streaming-Plattform gebaut mit Next.js, TypeScript und Node.js.
+Eine vollständige YouTube-Alternative, die mit Next.js 15, TypeScript und Prisma entwickelt wurde.
 
 ## ✨ Features
 
-- 📺 **Video-Streaming**: Hochwertige Video-Wiedergabe mit anpassbarem Player
-- ⬆️ **Video-Upload**: Einfacher Upload von Videos mit Drag & Drop
-- 🎨 **Moderne UI**: Responsive Design mit dunklem Theme
-- 🔍 **Video-Suche**: Durchsuchen Sie Videos nach Titel, Beschreibung und Tags
-- 📱 **Mobile-optimiert**: Funktioniert perfekt auf allen Geräten
-- 🎵 **Media Controls**: Vollständige Player-Steuerung mit Lautstärke und Fortschritt
+### 🔐 Authentifizierung
+- **NextAuth.js** mit mehreren Anbietern
+- Email/Passwort Registrierung und Login
+- OAuth Support (Google, GitHub)
+- JWT-basierte Sicherheit
+- Rollenbasierte Zugriffskontrolle (User, Creator, Moderator, Admin)
 
-## 🚀 Technologien
+### 📱 YouTube-Style UI
+- Responsive Design mit Dark Theme
+- Horizontale Kategorie-Navigation
+- Video-Grid mit Thumbnails
+- Infinite Scroll Loading
+- Professionelle Header-Navigation
+- Mobile-optimierte Menüs
 
-### Frontend
-- Next.js 15 mit App Router
-- TypeScript
-- Tailwind CSS
-- Heroicons
+### 🎬 Video Management
+- Video Upload und Streaming
+- Kategorie-System
+- Like/Dislike System  
+- Kommentar-System mit Replies
+- Video-Playlists
+- Subscription-System
 
-### Backend
-- Node.js
-- Express.js
-- Multer für File-Upload
-- CORS für Cross-Origin Requests
+### 🛡️ Sicherheit & Performance
+- Rate Limiting Middleware
+- Input Validation mit Zod
+- CORS und Security Headers
+- Optimized Build Pipeline
+- Database Query Optimization
 
-## 📦 Installation
+## 🛠️ Tech Stack
 
-### 1. Repository klonen
+- **Frontend**: Next.js 15, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes, Prisma ORM
+- **Database**: SQLite (Development), PostgreSQL (Production ready)
+- **Authentication**: NextAuth.js
+- **Validation**: Zod
+- **Icons**: Heroicons
+- **Deployment**: Vercel-ready
+
+## 🚀 Quick Start
+
+### Voraussetzungen
+- Node.js 18+
+- npm oder yarn
+
+### Installation
+
+1. **Repository klonen**
 ```bash
-git clone https://github.com/YOUR_USERNAME/video-streaming-platform.git
+git clone https://github.com/pythagorean-dev/video-streaming-platform.git
 cd video-streaming-platform
 ```
 
-### 2. Frontend-Dependencies installieren
+2. **Dependencies installieren**
 ```bash
 npm install
 ```
 
-### 3. Backend-Dependencies installieren
+3. **Environment Variablen einrichten**
 ```bash
-cd server
-npm install
-cd ..
+cp .env.example .env
 ```
 
-### 4. Anwendung starten
+Fülle die `.env` Datei mit deinen Konfigurationen:
+```env
+# Database
+DATABASE_URL="file:./dev.db"
 
-#### Beide Server gleichzeitig starten (empfohlen)
-```bash
-npm run start-all
+# NextAuth.js
+NEXTAUTH_SECRET="your-secret-here"
+NEXTAUTH_URL="http://localhost:3000"
+
+# OAuth Providers (optional)
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+GITHUB_CLIENT_ID="your-github-client-id" 
+GITHUB_CLIENT_SECRET="your-github-client-secret"
+
+# JWT
+JWT_SECRET="your-jwt-secret"
 ```
 
-#### Oder separat starten
+4. **Datenbank setup**
 ```bash
-# Backend (Port 5000)
-npm run server
+npx prisma generate
+npx prisma db push
+npx prisma db seed
+```
 
-# Frontend (Port 3000)
+5. **Development Server starten**
+```bash
 npm run dev
 ```
 
-### 5. Anwendung öffnen
-Öffnen Sie [http://localhost:3000](http://localhost:3000) in Ihrem Browser.
+Die App ist nun auf [http://localhost:3000](http://localhost:3000) verfügbar!
+
+## 👤 Demo Accounts
+
+Nach dem Seeding stehen folgende Test-Accounts zur Verfügung:
+
+- **Admin**: `admin@videostream.com` / `admin123`
+- **Creator**: `creator1@videostream.com` / `creator123`  
+- **User**: `user1@videostream.com` / `user123`
 
 ## 🤝 Mitwirken
 
