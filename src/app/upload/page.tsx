@@ -69,7 +69,7 @@ export default function UploadPage() {
     formData.append('tags', tags);
 
     try {
-      const response = await fetch('http://localhost:5000/api/videos/upload', {
+      const response = await fetch('/api/videos', {
         method: 'POST',
         body: formData,
       });

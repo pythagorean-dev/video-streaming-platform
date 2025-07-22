@@ -1,92 +1,220 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import Header from '@/components/Header';
 import VideoCard from '@/components/VideoCard';
+import CategoryFilter from '@/components/CategoryFilter';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
-const sampleVideos = [
-  {
-    id: '1',
-    title: 'Einführung in React und Next.js - Vollständiger Leitfaden für Anfänger',
-    thumbnail: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=225&fit=crop',
-    duration: '15:42',
-    views: 125000,
-    uploadDate: '2024-01-15',
-    channelName: 'TechAkademie',
-    channelAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
-  },
-  {
-    id: '2',
-    title: 'JavaScript ES6+ Features die jeder Entwickler kennen sollte',
-    thumbnail: 'https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=400&h=225&fit=crop',
-    duration: '22:18',
-    views: 87500,
-    uploadDate: '2024-01-10',
-    channelName: 'CodeMaster',
-    channelAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face'
-  },
-  {
-    id: '3',
-    title: 'TypeScript für Fortgeschrittene - Design Patterns und Best Practices',
-    thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=225&fit=crop',
-    duration: '18:55',
-    views: 43200,
-    uploadDate: '2024-01-08',
-    channelName: 'DevPro',
-    channelAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=40&h=40&fit=crop&crop=face'
-  },
-  {
-    id: '4',
-    title: 'Responsive Webdesign mit Tailwind CSS - Praktische Beispiele',
-    thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=225&fit=crop',
-    duration: '12:34',
-    views: 156000,
-    uploadDate: '2024-01-12',
-    channelName: 'WebDesign Pro',
-    channelAvatar: 'https://images.unsplash.com/photo-1494790108755-2616b332c387?w=40&h=40&fit=crop&crop=face'
-  },
-  {
-    id: '5',
-    title: 'Node.js und Express.js - RESTful API Entwicklung von Grund auf',
-    thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=225&fit=crop',
-    duration: '28:47',
-    views: 234000,
-    uploadDate: '2024-01-14',
-    channelName: 'Backend Academy',
-    channelAvatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=40&h=40&fit=crop&crop=face'
-  },
-  {
-    id: '6',
-    title: 'Docker Container für Entwickler - Komplette Anleitung',
-    thumbnail: 'https://images.unsplash.com/photo-1605745341112-85968b19335b?w=400&h=225&fit=crop',
-    duration: '31:22',
-    views: 98000,
-    uploadDate: '2024-01-09',
-    channelName: 'DevOps Master',
-    channelAvatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=40&h=40&fit=crop&crop=face'
-  }
+interface Video {
+  id: string;
+  title: string;
+  description?: string;
+  thumbnailUrl?: string;
+  duration?: number;
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
+  publishedAt: string;
+  category?: string;
+  tags: string[];
+  author: {
+    id: string;
+    username: string;
+    displayName: string;
+    avatar?: string;
+    isVerified: boolean;
+  };
+}
+
+interface ApiResponse {
+  success: boolean;
+  data: {
+    videos: Video[];
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalCount: number;
+      hasNextPage: boolean;
+      hasPreviousPage: boolean;
+    };
+  };
+}
+
+const categories = [
+  { id: 'ALL', name: 'Alle', active: true },
+  { id: 'EDUCATION', name: 'Bildung', active: false },
+  { id: 'TECHNOLOGY', name: 'Technologie', active: false },
+  { id: 'ENTERTAINMENT', name: 'Unterhaltung', active: false },
+  { id: 'MUSIC', name: 'Musik', active: false },
+  { id: 'GAMING', name: 'Gaming', active: false },
+  { id: 'NEWS', name: 'Nachrichten', active: false },
+  { id: 'SPORTS', name: 'Sport', active: false },
+  { id: 'LIFESTYLE', name: 'Lifestyle', active: false },
 ];
 
-export default function Home() {
+export default function HomePage() {
+  const { } = useSession();
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [page, setPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+
+  const fetchVideos = async (category: string = 'ALL', pageNum: number = 1, append: boolean = false) => {
+    try {
+      setLoading(!append); // Only show loading spinner for initial load
+      setError(null);
+
+      const params = new URLSearchParams({
+        page: pageNum.toString(),
+        limit: '12',
+        sortBy: 'date',
+      });
+
+      if (category !== 'ALL') {
+        params.append('category', category);
+      }
+
+      const response = await fetch(`/api/videos?${params.toString()}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch videos');
+      }
+
+      const data: ApiResponse = await response.json();
+
+      if (append) {
+        setVideos(prev => [...prev, ...data.data.videos]);
+      } else {
+        setVideos(data.data.videos);
+      }
+      
+      setHasNextPage(data.data.pagination.hasNextPage);
+      setPage(pageNum);
+
+    } catch (err) {
+      console.error('Error fetching videos:', err);
+      setError('Fehler beim Laden der Videos. Bitte versuchen Sie es später erneut.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVideos(selectedCategory, 1, false);
+  }, [selectedCategory]);
+
+  const handleCategoryChange = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    setPage(1);
+  };
+
+  const handleLoadMore = () => {
+    if (hasNextPage && !loading) {
+      fetchVideos(selectedCategory, page + 1, true);
+    }
+  };
+
+  const formatDuration = (duration: number | undefined) => {
+    if (!duration) return '0:00';
+    const minutes = Math.floor(duration / 60);
+    const seconds = Math.floor(duration % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+
   return (
     <div className="min-h-screen bg-gray-900">
       <Header />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <section className="mb-8">
-          <h2 className="text-2xl font-bold text-white mb-6">Empfohlene Videos</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {sampleVideos.map((video) => (
-              <VideoCard key={video.id} {...video} />
-            ))}
-          </div>
-        </section>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Category Filter */}
+        <CategoryFilter
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={handleCategoryChange}
+        />
 
-        <section className="mb-8">
-          <h2 className="text-2xl font-bold text-white mb-6">Trending Videos</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {sampleVideos.slice(0, 4).map((video) => (
-              <VideoCard key={`trending-${video.id}`} {...video} />
-            ))}
-          </div>
-        </section>
+        {/* Content Area */}
+        <div className="pb-8">
+          {loading && videos.length === 0 ? (
+            <LoadingSpinner />
+          ) : error ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <div className="text-red-400 text-lg mb-2">⚠️ Fehler</div>
+                <p className="text-gray-400">{error}</p>
+                <button
+                  onClick={() => fetchVideos(selectedCategory, 1, false)}
+                  className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  Erneut versuchen
+                </button>
+              </div>
+            </div>
+          ) : videos.length === 0 ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <div className="text-gray-400 text-lg mb-2">📹</div>
+                <p className="text-gray-400">
+                  {selectedCategory === 'ALL' 
+                    ? 'Keine Videos verfügbar' 
+                    : `Keine Videos in der Kategorie ${categories.find(c => c.id === selectedCategory)?.name} gefunden`}
+                </p>
+                {selectedCategory !== 'ALL' && (
+                  <button
+                    onClick={() => handleCategoryChange('ALL')}
+                    className="mt-4 text-blue-500 hover:text-blue-400"
+                  >
+                    Alle Videos anzeigen
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Video Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {videos.map((video) => (
+                  <VideoCard
+                    key={video.id}
+                    id={video.id}
+                    title={video.title}
+                    thumbnail={video.thumbnailUrl || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=1280&h=720&fit=crop'}
+                    duration={formatDuration(video.duration)}
+                    views={video.viewCount}
+                    uploadDate={video.publishedAt}
+                    channelName={video.author.displayName}
+                    channelAvatar={video.author.avatar}
+                  />
+                ))}
+              </div>
+
+              {/* Load More Button */}
+              {hasNextPage && (
+                <div className="flex justify-center mt-12">
+                  <button
+                    onClick={handleLoadMore}
+                    disabled={loading}
+                    className="bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-8 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                  >
+                    {loading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        <span>Lädt...</span>
+                      </>
+                    ) : (
+                      <span>Mehr Videos laden</span>
+                    )}
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </main>
     </div>
   );

@@ -61,7 +61,7 @@ export default function VideoPage({ params }: { params: Promise<{ id: string }> 
     
     const fetchVideo = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/videos/${videoId}`);
+        const response = await fetch(`/api/videos/${videoId}`);
         if (!response.ok) {
           throw new Error('Video nicht gefunden');
         }

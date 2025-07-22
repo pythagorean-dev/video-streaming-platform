@@ -1,0 +1,7 @@
+src/generated/
+node_modules/
+.next/
+dist/
+*.js
+*.d.ts
+prisma/migrations/
