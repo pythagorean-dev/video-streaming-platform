@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VideoStream Pro Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: white; }
+        .video { border: 1px solid #333; padding: 10px; margin: 10px 0; background: #2a2a2a; }
+    </style>
+</head>
+<body>
+    <h1>🎥 VideoStream Pro - API Test</h1>
+    <div id="status">Loading...</div>
+    <div id="videos"></div>
+
+    <script>
+        async function testAPI() {
+            try {
+                const response = await fetch('/api/videos?limit=5');
+                const data = await response.json();
+                
+                document.getElementById('status').innerHTML = '✅ API Response: ' + response.status;
+                
+                if (data.success) {
+                    const videosHTML = data.data.videos.map(video => `
+                        <div class="video">
+                            <h3>${video.title}</h3>
+                            <p>👤 ${video.author.displayName} | 👁️ ${video.viewCount} views</p>
+                            <p>📅 ${new Date(video.publishedAt).toLocaleDateString()}</p>
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('videos').innerHTML = `
+                        <h2>📹 Videos (${data.data.videos.length}):</h2>
+                        ${videosHTML}
+                    `;
+                } else {
+                    document.getElementById('videos').innerHTML = '❌ API Error: ' + JSON.stringify(data);
+                }
+            } catch (error) {
+                document.getElementById('status').innerHTML = '❌ Network Error: ' + error.message;
+                document.getElementById('videos').innerHTML = '';
+            }
+        }
+        
+        testAPI();
+    </script>
+</body>
+</html>

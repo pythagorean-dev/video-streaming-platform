@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import Header from '@/components/Header';
 import VideoCard from '@/components/VideoCard';
 import CategoryFilter from '@/components/CategoryFilter';
@@ -55,7 +54,8 @@ const categories = [
 ];
 
 export default function HomePage() {
-  const { } = useSession();
+  // Session nicht verwendet in diesem Component
+  // const { data: session } = useSession();
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -125,6 +125,18 @@ export default function HomePage() {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return 'vor 1 Tag';
+    if (diffDays < 30) return `vor ${diffDays} Tagen`;
+    if (diffDays < 365) return `vor ${Math.floor(diffDays / 30)} Monaten`;
+    return `vor ${Math.floor(diffDays / 365)} Jahren`;
+  };
+
 
   return (
     <div className="min-h-screen bg-gray-900">
@@ -186,7 +198,7 @@ export default function HomePage() {
                     thumbnail={video.thumbnailUrl || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=1280&h=720&fit=crop'}
                     duration={formatDuration(video.duration)}
                     views={video.viewCount}
-                    uploadDate={video.publishedAt}
+                    uploadDate={formatDate(video.publishedAt)}
                     channelName={video.author.displayName}
                     channelAvatar={video.author.avatar}
                   />
