@@ -106,14 +106,29 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// OPTIONS handler for CORS
-export async function OPTIONS() {
+// OPTIONS handler for CORS with strict security
+export async function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get('origin')
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://your-production-domain.com',
+    ...(process.env.CORS_ALLOWED_ORIGINS?.split(',').map(o => o.trim()) || [])
+  ]
+
+  const headers: Record<string, string> = {
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-CSRF-Token',
+    'Access-Control-Max-Age': '86400',
+  }
+
+  if (origin && allowedOrigins.includes(origin)) {
+    headers['Access-Control-Allow-Origin'] = origin
+    headers['Access-Control-Allow-Credentials'] = 'true'
+  }
+
   return new Response(null, {
     status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': process.env.CORS_ORIGIN || '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
+    headers,
   })
 }

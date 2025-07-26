@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   MagnifyingGlassIcon,
@@ -18,9 +19,18 @@ export default function Header() {
   const { data: session, status } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
 
   const handleSignOut = async () => {
     await signOut({ callbackUrl: '/' });
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
   };
 
   return (
@@ -35,14 +45,18 @@ export default function Header() {
 
           {/* Search Bar - Desktop */}
           <div className="hidden md:block flex-1 max-w-lg mx-8">
-            <div className="relative">
+            <form onSubmit={handleSearch} className="relative">
               <input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Videos suchen..."
                 className="w-full bg-gray-700 border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-            </div>
+              <button type="submit" className="absolute left-3 top-2.5">
+                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 hover:text-white" />
+              </button>
+            </form>
           </div>
 
           {/* Right Section - Desktop */}
@@ -158,14 +172,18 @@ export default function Header() {
           <div className="md:hidden border-t border-gray-700">
             <div className="px-2 pt-2 pb-3 space-y-1">
               {/* Search Bar - Mobile */}
-              <div className="relative mb-3">
+              <form onSubmit={handleSearch} className="relative mb-3">
                 <input
                   type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Videos suchen..."
                   className="w-full bg-gray-700 border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-white placeholder-gray-400"
                 />
-                <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-              </div>
+                <button type="submit" className="absolute left-3 top-2.5">
+                  <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 hover:text-white" />
+                </button>
+              </form>
 
               {session ? (
                 <>

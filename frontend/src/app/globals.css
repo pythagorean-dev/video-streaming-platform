@@ -1,0 +1,508 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* CSS Variables for dynamic theming */
+:root {
+  /* Light theme variables */
+  --background: 255 255 255;
+  --foreground: 15 15 15;
+  --card: 255 255 255;
+  --card-foreground: 15 15 15;
+  --popover: 255 255 255;
+  --popover-foreground: 15 15 15;
+  --primary: 14 165 233;
+  --primary-foreground: 255 255 255;
+  --secondary: 249 249 249;
+  --secondary-foreground: 15 15 15;
+  --muted: 249 249 249;
+  --muted-foreground: 115 115 115;
+  --accent: 249 249 249;
+  --accent-foreground: 15 15 15;
+  --destructive: 239 68 68;
+  --destructive-foreground: 255 255 255;
+  --border: 229 229 229;
+  --input: 229 229 229;
+  --ring: 14 165 233;
+  --radius: 0.5rem;
+  
+  /* YouTube-specific colors */
+  --youtube-red: 255 0 0;
+  --youtube-red-dark: 204 0 0;
+  --youtube-red-light: 255 68 68;
+  
+  /* Video player colors */
+  --player-bg: 0 0 0;
+  --player-controls: 255 255 255;
+  --player-progress: 255 0 0;
+  --player-buffer: 255 255 255;
+  
+  /* Shadow variables */
+  --shadow-color: 0 0 0;
+  --shadow-elevation-low: 0 1px 2px 0 hsl(var(--shadow-color) / 0.05);
+  --shadow-elevation-medium: 0 4px 6px -1px hsl(var(--shadow-color) / 0.1), 0 2px 4px -2px hsl(var(--shadow-color) / 0.1);
+  --shadow-elevation-high: 0 10px 15px -3px hsl(var(--shadow-color) / 0.1), 0 4px 6px -4px hsl(var(--shadow-color) / 0.1);
+  --shadow-elevation-very-high: 0 25px 50px -12px hsl(var(--shadow-color) / 0.25);
+}
+
+.dark {
+  /* Dark theme variables */
+  --background: 15 15 15;
+  --foreground: 241 241 241;
+  --card: 26 26 26;
+  --card-foreground: 241 241 241;
+  --popover: 26 26 26;
+  --popover-foreground: 241 241 241;
+  --primary: 14 165 233;
+  --primary-foreground: 255 255 255;
+  --secondary: 39 39 39;
+  --secondary-foreground: 241 241 241;
+  --muted: 39 39 39;
+  --muted-foreground: 170 170 170;
+  --accent: 39 39 39;
+  --accent-foreground: 241 241 241;
+  --destructive: 239 68 68;
+  --destructive-foreground: 255 255 255;
+  --border: 63 63 63;
+  --input: 63 63 63;
+  --ring: 14 165 233;
+  
+  /* Dark mode shadows */
+  --shadow-color: 255 255 255;
+}
+
+/* Base styles */
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Selection styles */
+::selection {
+  background-color: hsl(var(--primary) / 0.2);
+  color: hsl(var(--primary-foreground));
+}
+
+::-moz-selection {
+  background-color: hsl(var(--primary) / 0.2);
+  color: hsl(var(--primary-foreground));
+}
+
+/* Focus styles */
+.focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Link styles */
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Button reset */
+button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Input styles */
+input, textarea, select {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+}
+
+/* Disabled states */
+:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Loading states */
+.loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--muted) / 0.5),
+    transparent
+  );
+  animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+  100% {
+    left: 100%;
+  }
+}
+
+/* Video player specific styles */
+.video-player {
+  position: relative;
+  background-color: rgb(var(--player-bg));
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.video-player video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.video-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0.4) 50%,
+    transparent 100%
+  );
+  color: rgb(var(--player-controls));
+  padding: 1rem;
+  transition: opacity 0.3s ease;
+}
+
+.video-controls.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: rgb(var(--player-progress));
+  transition: width 0.1s ease;
+}
+
+.progress-bar-buffer {
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.5);
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Thumbnail grid styles */
+.thumbnail-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+@media (max-width: 640px) {
+  .thumbnail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.thumbnail-card {
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.thumbnail-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-elevation-medium);
+  border-color: hsl(var(--ring));
+}
+
+.thumbnail-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+.thumbnail-card:hover img {
+  transform: scale(1.05);
+}
+
+/* Comment styles */
+.comment-thread {
+  border-left: 2px solid hsl(var(--border));
+  margin-left: 1rem;
+  padding-left: 1rem;
+}
+
+.comment-content {
+  background-color: hsl(var(--muted));
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Notification styles */
+.notification {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 100;
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 1rem;
+  box-shadow: var(--shadow-elevation-high);
+  animation: slide-in-right 0.3s ease-out;
+}
+
+.notification.success {
+  border-color: hsl(var(--primary));
+}
+
+.notification.error {
+  border-color: hsl(var(--destructive));
+}
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fade-in 0.2s ease-out;
+}
+
+.modal-content {
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-elevation-very-high);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+  animation: scale-in 0.2s ease-out;
+}
+
+/* Dropdown styles */
+.dropdown-content {
+  background-color: hsl(var(--popover));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-elevation-medium);
+  z-index: 80;
+  animation: slide-in-down 0.2s ease-out;
+}
+
+.dropdown-item {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.dropdown-item:hover {
+  background-color: hsl(var(--accent));
+}
+
+/* Sidebar styles */
+.sidebar {
+  background-color: hsl(var(--card));
+  border-right: 1px solid hsl(var(--border));
+  transition: transform 0.3s ease;
+}
+
+.sidebar.collapsed {
+  transform: translateX(-100%);
+}
+
+@media (min-width: 1024px) {
+  .sidebar.collapsed {
+    transform: translateX(-240px);
+  }
+}
+
+/* Search styles */
+.search-results {
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-elevation-medium);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.search-result-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid hsl(var(--border));
+  transition: background-color 0.1s ease;
+}
+
+.search-result-item:hover {
+  background-color: hsl(var(--accent));
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+/* Upload area styles */
+.upload-area {
+  border: 2px dashed hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.upload-area:hover {
+  border-color: hsl(var(--ring));
+  background-color: hsl(var(--accent));
+}
+
+.upload-area.dragover {
+  border-color: hsl(var(--primary));
+  background-color: hsl(var(--primary) / 0.1);
+}
+
+/* Progress bar styles */
+.upload-progress {
+  width: 100%;
+  height: 8px;
+  background-color: hsl(var(--muted));
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.upload-progress-fill {
+  height: 100%;
+  background-color: hsl(var(--primary));
+  transition: width 0.3s ease;
+}
+
+/* Responsive utilities */
+.mobile-only {
+  display: block;
+}
+
+.desktop-only {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .mobile-only {
+    display: none;
+  }
+  
+  .desktop-only {
+    display: block;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: 0 0 0;
+    --ring: 0 0 255;
+  }
+  
+  .dark {
+    --border: 255 255 255;
+    --ring: 0 255 255;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High DPI display optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  img {
+    image-rendering: -webkit-optimize-contrast;
+  }
+}
+
+/* Custom utility classes */
+.text-gradient {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--ring)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass-effect {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.smooth-corners {
+  border-radius: calc(var(--radius) * 2);
+}

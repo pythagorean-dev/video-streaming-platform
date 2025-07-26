@@ -126,23 +126,35 @@ export const requireCreator = requireRole(UserRole.CREATOR)
 // Moderator or higher middleware
 export const requireModerator = requireRole(UserRole.MODERATOR)
 
-// CORS middleware
+// CORS middleware with strict whitelist
 export function corsMiddleware(req: NextRequest) {
   const response = NextResponse.next()
   
   const origin = req.headers.get('origin')
-  const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000']
   
+  // Strict CORS whitelist - only allow specific domains
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001', 
+    'https://your-production-domain.com',
+    // Add more domains as needed
+    ...(process.env.CORS_ALLOWED_ORIGINS?.split(',').map(o => o.trim()) || [])
+  ]
+  
+  // Only set CORS headers if origin is explicitly allowed
   if (origin && allowedOrigins.includes(origin)) {
     response.headers.set('Access-Control-Allow-Origin', origin)
+    response.headers.set('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+    response.headers.set(
+      'Access-Control-Allow-Headers', 
+      'Content-Type, Authorization, X-Requested-With, X-CSRF-Token'
+    )
+    response.headers.set('Access-Control-Allow-Credentials', 'true')
+    response.headers.set('Access-Control-Max-Age', '86400') // Cache preflight for 24h
+  } else if (origin) {
+    // Log suspicious origins for security monitoring
+    console.warn(`CORS: Blocked request from unauthorized origin: ${origin}`)
   }
-  
-  response.headers.set('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
-  response.headers.set(
-    'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, X-Requested-With'
-  )
-  response.headers.set('Access-Control-Allow-Credentials', 'true')
   
   return response
 }
@@ -215,4 +227,37 @@ export function createSuccessResponse(
     },
     { status: statusCode }
   )
+}
+
+// CSRF protection middleware
+export async function csrfProtection(req: NextRequest) {
+  // Skip CSRF check for safe methods
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+    return null
+  }
+
+  const csrfToken = req.headers.get('x-csrf-token')
+  const sessionToken = req.cookies.get('next-auth.csrf-token')?.value
+
+  if (!csrfToken || !sessionToken || csrfToken !== sessionToken) {
+    return NextResponse.json(
+      { 
+        error: 'CSRF Token Mismatch', 
+        message: 'Invalid CSRF token. Please refresh the page and try again.' 
+      },
+      { status: 403 }
+    )
+  }
+
+  return null
+}
+
+// Generate CSRF token for forms
+export function generateCSRFToken(): string {
+  return require('crypto').randomBytes(32).toString('hex')
+}
+
+// Verify CSRF token
+export function verifyCSRFToken(token: string, sessionToken: string): boolean {
+  return token && sessionToken && token === sessionToken
 }
